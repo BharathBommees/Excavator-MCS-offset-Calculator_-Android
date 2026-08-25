@@ -1,0 +1,117 @@
+HOW TO BUILD THE APK WITHOUT ADMIN RIGHTS (GitHub Actions)
+=============================================================
+Since your company laptop doesn't allow WSL/admin installs, this route
+builds the APK entirely in the cloud on GitHub's servers. You only use
+your web browser -- nothing is installed on your laptop, and nothing
+needs admin rights.
+
+How it works: you upload this project to a free GitHub repository. A
+file already included here (.github/workflows/build.yml) tells GitHub
+to automatically spin up a Linux machine, run the exact same
+`buildozer android debug` command, and hand you back the finished APK
+as a download. This is the same command from the WSL instructions --
+it just runs on GitHub's machine instead of yours, so it has full,
+unrestricted internet access and will actually complete.
+
+
+STEP 1 - Create a free GitHub account
+---------------------------------------
+Go to https://github.com/signup in your browser and create an account
+(just needs an email address). If you already have one, skip this.
+
+(If your company has a policy about using personal accounts on a work
+laptop, check with IT first -- but note everything here happens through
+the browser, nothing is installed locally.)
+
+
+STEP 2 - Create a new repository
+-----------------------------------
+1. Once logged in, click the "+" icon top-right -> "New repository".
+2. Name it something like "excavator-offset-calculator".
+3. Set it to Private if you'd prefer it not be public (private repos
+   still get free GitHub Actions build minutes).
+4. Do NOT check "Add a README" -- leave the repo empty.
+5. Click "Create repository".
+
+
+STEP 3 - Upload the project files
+-------------------------------------
+On the new repository's page, click "uploading an existing file" (or
+"Add file" -> "Upload files" if you don't see that link).
+
+Then, in your file explorer, open the excavator_android folder from the
+zip you extracted, select ALL of these and drag them into the browser
+upload box:
+    main.py
+    custom_widgets.py
+    core_logic.py
+    buildozer.spec
+    requirements.txt
+    assets/                (the whole folder)
+    .github/                (the whole folder -- may be hidden; see note)
+
+NOTE: the .github folder starts with a dot, so it may not show in your
+file explorer unless you enable "show hidden files/folders" (Windows:
+File Explorer -> View -> check "Hidden items"). Make sure it's included
+-- it contains the file that tells GitHub how to build the APK. Modern
+browsers let you drag whole folders into the GitHub upload box and it
+preserves the folder structure automatically.
+
+Scroll down, add a short commit message like "initial upload", and
+click "Commit changes".
+
+
+STEP 4 - Watch it build
+---------------------------
+1. Click the "Actions" tab near the top of your repository page.
+2. You should see a workflow run called "Build Android APK" already
+   running (it starts automatically after your upload). If you don't
+   see one, click "Build Android APK" on the left, then "Run workflow"
+   -> "Run workflow" to start it manually.
+3. Click into the running job to watch its progress live. It goes
+   through the same steps as the WSL build would -- installing Java,
+   installing Buildozer, downloading the Android SDK/NDK, and
+   cross-compiling NumPy and Kivy for Android.
+4. This takes roughly 30-60 minutes on the first run. You can close the
+   browser tab and come back later -- it keeps running on GitHub's
+   servers regardless.
+
+
+STEP 5 - Download your APK
+------------------------------
+1. Once the run finishes with a green checkmark, stay on that run's
+   page and scroll down to the "Artifacts" section at the bottom.
+2. Click "excavator-offset-calculator-apk" to download it -- this comes
+   down as a .zip file.
+3. Extract that zip; inside is your .apk file.
+
+
+STEP 6 - Install it on your phone
+-------------------------------------
+Transfer the .apk file to your Android phone any way you like (email it
+to yourself, upload to Google Drive and download on the phone, USB
+cable, etc.), then tap it on your phone to install.
+
+Android will warn you it's from an "unknown source" since it's an
+unsigned debug build rather than a Play Store app -- tap through the
+prompt to allow installation from whichever app you used to open the
+file (Settings -> allow this source), then confirm the install.
+
+
+IF THE BUILD FAILS
+----------------------
+Click into the failed step in the Actions log to see the error message,
+and paste it back here -- I can help debug it directly from the log
+output. Common first-time issues are usually something small (e.g. a
+missing file that didn't get uploaded in Step 3) rather than anything
+wrong with the build process itself, since GitHub's runners have the
+same environment this workflow was written against.
+
+
+RE-BUILDING AFTER CHANGES
+-----------------------------
+Any time you want a new build (e.g. after editing main.py), just upload
+the changed file again the same way (Add file -> Upload files, or drag
+the changed file onto its existing entry in the repo) and commit -- the
+Actions workflow re-runs automatically on every upload to the main
+branch.

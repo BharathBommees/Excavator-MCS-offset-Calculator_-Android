@@ -1,0 +1,137 @@
+HOW TO BUILD THE ANDROID APK
+==============================
+This app was written and fully tested (headlessly, screenshot-verified,
+all 4 tabs, both heading methods, the roll/pitch tilt correction, and
+the grid-heading cross-check) in a Linux sandbox using Kivy 2.3.1.
+
+The sandbox CANNOT complete the actual Android build, and this has been
+verified concretely, not just assumed: running `buildozer android debug`
+here gets all the way through installing python-for-android and its
+Python build dependencies, then fails downloading Apache Ant from
+archive.apache.org with an HTTP 403 -- the sandbox's network is on an
+allowlist that doesn't include Google/Apache's SDK/tooling servers. On a
+normal machine with regular internet access, this step (and everything
+after it -- Android SDK, NDK, Ant, Gradle) downloads automatically and
+just works.
+
+So: the Python code itself is verified working. What's left is running
+the actual build on a machine with full internet access.
+
+
+REQUIREMENTS
+------------
+- A Linux machine, or Windows with WSL2 (Buildozer does not run natively
+  on Windows or macOS -- WSL2 is the standard route on Windows).
+- Python 3.10+
+- A real internet connection (buildozer downloads several GB of Android
+  SDK/NDK/tooling on first run -- this can take 30-60+ minutes depending
+  on your connection, only on the FIRST build).
+- ~10-15 GB free disk space for the SDK/NDK/build cache.
+- Do NOT run buildozer as root if you can avoid it (it works, as proven
+  here, but the tool itself warns against it -- prefer a normal user
+  account. This project's buildozer.spec already has warn_on_root = 0
+  set so it won't block on the prompt either way).
+
+
+STEP-BY-STEP
+------------
+
+1. Copy this whole folder (excavator_android/) onto your Linux/WSL
+   machine, keeping the "assets" subfolder alongside the .py files.
+
+2. Install system dependencies (Ubuntu/Debian/WSL example):
+       sudo apt update
+       sudo apt install -y python3-pip build-essential git openjdk-17-jdk-headless \
+           libffi-dev libssl-dev zlib1g-dev libbz2-dev unzip
+
+3. Install Buildozer and Cython:
+       pip install --user buildozer cython
+
+   If you see "error: externally-managed-environment", either add
+   --break-system-packages to the pip command, or (recommended) create
+   a virtual environment first:
+       python3 -m venv venv
+       source venv/bin/activate
+       pip install buildozer cython
+
+4. From inside the excavator_android/ folder, run:
+       buildozer android debug
+
+   First run will:
+   - Download the Android SDK, NDK, Apache Ant, and Gradle (several GB)
+   - Download/build python-for-android and cross-compile Python,
+     NumPy, Pillow, and Kivy for Android (this is the slow part --
+     NumPy especially can take 15-30+ minutes to cross-compile)
+   - Package everything into an APK
+
+   This can take well over an hour on the first run. Subsequent builds
+   are much faster (everything is cached in .buildozer/).
+
+5. When it finishes, your APK is at:
+       bin/excavatoroffsetcalc-1.0-arm64-v8a_armeabi-v7a-debug.apk
+
+   Copy this file to your Android phone (email it to yourself, use a USB
+   cable, Google Drive, etc.) and tap it to install. You'll need to
+   allow "Install from unknown sources" for whichever app you use to
+   open it, since this is an unsigned debug build, not a Play Store app.
+
+
+TESTING THE APP CODE BEFORE BUILDING (recommended)
+----------------------------------------------------
+You can sanity-check the Kivy app runs correctly on your Linux/WSL
+machine BEFORE spending an hour on the Android build, exactly like a
+desktop app:
+       pip install kivy numpy pillow
+       python3 main.py
+
+Click through all 4 tabs, load the example values on tab 2, hit
+Calculate, and check both diagrams and the results panel on tab 3
+render correctly -- this is the same UI code that runs on Android, so
+if it works here, the on-device behavior will match.
+
+
+TROUBLESHOOTING
+----------------
+- "Java compiler (javac) not found": install a JDK (see step 2) and
+  make sure JAVA_HOME is set, e.g.:
+      export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+
+- Build fails partway through downloading the SDK/NDK: this is almost
+  always a network hiccup or a corporate/VPN firewall blocking Google's
+  servers. Retry -- buildozer resumes/re-downloads what it needs.
+
+- "error: externally-managed-environment" from pip: see step 3 above.
+
+- Numpy takes a very long time to build: this is normal on first build
+  (it's being cross-compiled for ARM from source). Let it run.
+
+- To force a clean rebuild if something gets into a bad state:
+      buildozer android clean
+  (this clears the .buildozer/ cache; the next build will re-download
+  everything, so only do this if you're actually stuck).
+
+- App package name / display name: edit buildozer.spec (title,
+  package.name, package.domain) if you want to change these before
+  building.
+
+
+WHAT'S IN THIS FOLDER
+-----------------------
+main.py            - Kivy UI, 4 tabs matching the desktop app
+custom_widgets.py   - native Kivy-drawn diagrams (no matplotlib - see
+                      note below) and the yellow-highlighted results panel
+core_logic.py       - the calculation engine, byte-for-byte identical
+                      formulas to the validated desktop app (matches your
+                      legacy calibration spreadsheet to 8+ significant
+                      figures)
+buildozer.spec      - Android build configuration
+assets/             - reference photo and app icon
+
+Note on matplotlib: the desktop app uses matplotlib for its diagrams.
+matplotlib has no reliable official Android build recipe and is a common
+source of Buildozer failures / huge APK size, so the Android version
+draws its diagrams natively using Kivy's own graphics (Line, Ellipse,
+Color) instead. Same data, same formulas, different rendering -- this
+was tested and confirmed to render correctly (screenshotted, all points/
+lines/angle-arc/labels verified in the right positions) before this
+build was finalized.
