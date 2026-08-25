@@ -15,6 +15,8 @@ version = 1.0
 # reliable Android build.
 requirements = python3,kivy==2.3.1,numpy,pillow
 
+p4a.branch = v2024.01.21
+
 icon.filename = %(source.dir)s/assets/icon.png
 
 orientation = portrait
