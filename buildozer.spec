@@ -24,9 +24,9 @@ android.permissions =
 
 # Reasonable modern defaults; raise minapi if you hit device-support
 # issues, or leave as-is for broad compatibility.
-android.minapi = 21
+android.minapi = 24
 android.api = 33
-android.ndk_api = 21
+android.ndk_api = 24
 
 android.archs = arm64-v8a, armeabi-v7a
 
