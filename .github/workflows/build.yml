@@ -36,18 +36,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install buildozer cython "python-for-android==2024.1.21"
 
-      - name: Build the APK (auto-retries on transient network errors)
-        run: |
+       - name: Build the APK (auto-retries on transient network errors)
+         run: |
            set +e
-           for attempt in 1 2 3; do
-             echo "=== Build attempt $attempt of 3 ==="
+           for attempt in 1 2 3 4 5; do
+             echo "=== Build attempt $attempt of 5 ==="
              buildozer android debug
              if [ $? -eq 0 ]; then
                echo "Build succeeded on attempt $attempt"
                exit 0
              fi
-             echo "Attempt $attempt failed, waiting 30s before retry..."
-             sleep 30
+             echo "Attempt $attempt failed, waiting 60s before retry..."
+             sleep 60
            done
-           echo "All 3 attempts failed."
+           echo "All 5 attempts failed."
            exit 1
