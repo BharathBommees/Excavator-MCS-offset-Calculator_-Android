@@ -1,7 +1,4 @@
-- name: Build with Buildozer
-      run: |
-        buildozer android clean
-        buildozer android debug
+name: Build Android APK
 
 # Runs automatically on every push to main, and can also be triggered
 # manually from the Actions tab ("Run workflow" button).
@@ -39,11 +36,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install buildozer cython
 
-      - name: Build the APK (auto-retries on transient network errors)
+      - name: Clean and Build the APK (auto-retries on transient network errors)
         run: |
           set +e
           for attempt in 1 2 3 4 5; do
             echo "=== Build attempt $attempt of 5 ==="
+            buildozer android clean
             buildozer android debug
             if [ $? -eq 0 ]; then
               echo "Build succeeded on attempt $attempt"
