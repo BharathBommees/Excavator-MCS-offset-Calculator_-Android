@@ -1,4 +1,7 @@
-name: Build Android APK
+- name: Build with Buildozer
+      run: |
+        buildozer android clean
+        buildozer android debug
 
 # Runs automatically on every push to main, and can also be triggered
 # manually from the Actions tab ("Run workflow" button).
