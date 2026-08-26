@@ -22,7 +22,7 @@ icon.filename = %(source.dir)s/assets/icon.png
 orientation = portrait
 fullscreen = 0
 
-android.permissions =
+
 
 # Reasonable modern defaults; raise minapi if you hit device-support
 # issues, or leave as-is for broad compatibility.
