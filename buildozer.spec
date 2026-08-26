@@ -28,6 +28,7 @@ android.permissions =
 # issues, or leave as-is for broad compatibility.
 android.minapi = 24
 android.api = 34
+android.sdk = 34
 android.ndk_api = 24
 
 android.archs = arm64-v8a, armeabi-v7a
